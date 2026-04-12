@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(xargs kill:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{redirect_url}\" http://localhost:3000/clientes)",
+      "Bash(curl -s http://localhost:3000/clientes)",
+      "Bash(curl -s http://localhost:3000/proyectos)",
+      "Bash(curl -s http://localhost:3000/facturas)",
+      "Bash(curl -s http://localhost:3000/leads)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://localhost:3000/portal)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/portal)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\" http://localhost:3000/portal)",
+      "Bash(/usr/bin/curl --version)",
+      "Bash(/usr/bin/curl -s \"http://localhost:3000/portfolio\")",
+      "Bash(/usr/bin/curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\" \"http://localhost:3000/portfolio\")",
+      "Bash(/usr/bin/curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3000/portfolio\")",
+      "Bash(python3 -c \"import sys; data=sys.stdin.read\\(\\); idx=data.find\\('__NEXT_F'\\); print\\(data[idx:idx+500] if idx>=0 else 'not found'\\)\")",
+      "Bash(node node_modules/next/dist/bin/next build)"
+    ]
+  }
+}
