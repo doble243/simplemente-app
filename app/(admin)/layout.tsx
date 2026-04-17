@@ -8,11 +8,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (supabaseUrl.includes('placeholder')) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar />
+        <Sidebar newLeads={0} />
         <div className="flex flex-1 flex-col min-w-0">
           {children}
         </div>
-        <MobileNav />
+        <MobileNav newLeads={0} />
       </div>
     )
   }
@@ -29,13 +29,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (profile?.role !== 'admin') redirect('/portal')
 
+  // Fetch new leads count for badge
+  const { count: newLeads } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'new')
+
+  const count = newLeads ?? 0
+
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
+      <Sidebar newLeads={count} />
       <div className="flex flex-1 flex-col min-w-0">
         {children}
       </div>
-      <MobileNav />
+      <MobileNav newLeads={count} />
     </div>
   )
 }

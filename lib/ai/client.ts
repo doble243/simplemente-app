@@ -1,19 +1,13 @@
-/**
- * OpenAI-compatible AI client — cero dependencias extra.
- * Funciona con LM Studio (local), Groq, OpenRouter, o cualquier API compatible.
- *
- * Local:       AI_BASE_URL=http://127.0.0.1:1234/v1  (LM Studio por defecto)
- * Producción:  AI_BASE_URL=https://api.groq.com/openai/v1  (u otro proveedor)
- */
+// OpenAI-compatible AI client. Producción: Groq (https://api.groq.com/openai/v1)
 
-const AI_BASE_URL = (process.env.AI_BASE_URL ?? 'http://127.0.0.1:1234/v1').replace(/\/$/, '')
-const AI_API_KEY  = process.env.AI_API_KEY ?? 'lm-studio'  // LM Studio ignora el key
+const AI_BASE_URL = (process.env.AI_BASE_URL ?? 'https://api.groq.com/openai/v1').replace(/\/$/, '')
+const AI_API_KEY  = process.env.AI_API_KEY ?? ''
 
-export const AI_MODEL = process.env.AI_MODEL ?? 'google/gemma-4-e4b'
+export const AI_MODEL = process.env.AI_MODEL ?? 'llama-3.3-70b-versatile'
 
 export const AI_LIMITS = {
-  chatbot:         1024,
-  leadQualify:     512,
+  chatbot:         150,   // JSON tiny response: {"text":"...","suggestions":[...]}
+  leadQualify:     256,
   quoteGenerator:  2048,
   projectSummary:  2048,
   portalAssistant: 1024,
@@ -27,9 +21,10 @@ export interface ChatMessage {
 }
 
 interface CompletionOptions {
-  messages:    ChatMessage[]
-  max_tokens?: number
-  model?:      string
+  messages:     ChatMessage[]
+  max_tokens?:  number
+  model?:       string
+  temperature?: number
 }
 
 // ── Non-streaming completion ───────────────────────────────────────────────
@@ -44,10 +39,11 @@ export async function aiComplete(
       Authorization: `Bearer ${AI_API_KEY}`,
     },
     body: JSON.stringify({
-      model:      options.model ?? AI_MODEL,
-      messages:   options.messages,
-      max_tokens: options.max_tokens,
-      stream:     false,
+      model:       options.model ?? AI_MODEL,
+      messages:    options.messages,
+      max_tokens:  options.max_tokens,
+      temperature: options.temperature ?? 0.7,
+      stream:      false,
     }),
   })
 

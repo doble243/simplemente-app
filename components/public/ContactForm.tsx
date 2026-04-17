@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Send } from 'lucide-react'
+import { CheckCircle2, Send, Sparkles } from 'lucide-react'
 
 const schema = z.object({
   name: z.string().min(2, 'Ingresá tu nombre'),
@@ -27,12 +27,37 @@ const labelClass = 'block text-xs font-medium uppercase tracking-widest text-whi
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fromChat, setFromChat] = useState(false)
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  // ── Pre-fill from chat widget intent ──────────────────────────────────────
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('simplemente_chat_intent')
+      if (!raw) return
+      sessionStorage.removeItem('simplemente_chat_intent')
+      const intent = JSON.parse(raw) as {
+        projectType?: string
+        budgetRange?: string
+        planLabel?:   string
+        summary?:     string
+      }
+      let filled = false
+      if (intent.projectType) { setValue('project_type', intent.projectType); filled = true }
+      if (intent.budgetRange)  { setValue('budget_range', intent.budgetRange); filled = true }
+      if (intent.summary?.trim()) {
+        setValue('message', intent.summary.trim())
+        filled = true
+      }
+      if (filled) setFromChat(true)
+    } catch { /* ignore */ }
+  }, [setValue])
 
   async function onSubmit(data: FormData) {
     setError(null)
@@ -93,6 +118,20 @@ export function ContactForm() {
             </p>
           </div>
 
+          {/* Chat pre-fill banner */}
+          {fromChat && (
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/[0.07] px-4 py-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                style={{ background: 'linear-gradient(135deg,#6c63ff,#a855f7)' }}>
+                <Sparkles className="h-3.5 w-3.5 text-white" />
+              </div>
+              <p className="text-[13px] text-violet-300/90 leading-snug">
+                Rellenamos el formulario con lo que nos contaste en el chat.{' '}
+                <span className="text-white/60">Revisá y completá los campos que falten.</span>
+              </p>
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -136,11 +175,12 @@ export function ContactForm() {
                 <label htmlFor="budget_range" className={labelClass}>Presupuesto estimado</label>
                 <select id="budget_range" {...register('budget_range')} className={fieldClass}>
                   <option value="" className="bg-[#0A1628]">Seleccioná...</option>
-                  <option value="lt300" className="bg-[#0A1628]">Menos de USD 300</option>
-                  <option value="300-600" className="bg-[#0A1628]">USD 300 – 600</option>
-                  <option value="600-1200" className="bg-[#0A1628]">USD 600 – 1,200</option>
-                  <option value="1200-3000" className="bg-[#0A1628]">USD 1,200 – 3,000</option>
-                  <option value="gt3000" className="bg-[#0A1628]">Más de USD 3,000</option>
+                  <option value="lt5k"      className="bg-[#0A1628]">Menos de $5.000 UYU</option>
+                  <option value="5k-10k"    className="bg-[#0A1628]">$5.000 – $10.000 UYU</option>
+                  <option value="10k-20k"   className="bg-[#0A1628]">$10.000 – $20.000 UYU</option>
+                  <option value="20k-40k"   className="bg-[#0A1628]">$20.000 – $40.000 UYU</option>
+                  <option value="gt40k"     className="bg-[#0A1628]">Más de $40.000 UYU</option>
+                  <option value="paquete"   className="bg-[#0A1628]">Paquete completo ($20K + $8K/mes)</option>
                 </select>
               </div>
             </div>

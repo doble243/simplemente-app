@@ -211,7 +211,9 @@ export default async function ClientDetailPage({ params }: Props) {
                     </div>
                   )}
                   <Button asChild variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto mt-1">
-                    <Link href={`/proyectos/nuevo?client=${id}`}><Plus className="h-3.5 w-3.5" />Nuevo proyecto</Link>
+                    <Link href={`/proyectos/nuevo?client=${id}&clientName=${encodeURIComponent(client.company_name)}`}>
+                      <Plus className="h-3.5 w-3.5" />Nuevo proyecto
+                    </Link>
                   </Button>
                 </TabsContent>
 

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, Loader2 } from 'lucide-react'
 
 const DEFAULTS = {
@@ -81,79 +80,89 @@ export default function ConfiguracionPage() {
   return (
     <>
       <Topbar title="Configuración" />
-      <main className="p-6 max-w-2xl">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <form onSubmit={handleSave} className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle>Datos de la agencia</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label>Nombre</Label>
-                    <Input value={form.agency_name} onChange={(e) => set('agency_name', e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Email</Label>
-                    <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Teléfono</Label>
-                    <Input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="09X XXX XXX" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>RUT</Label>
-                    <Input value={form.rut} onChange={(e) => set('rut', e.target.value)} placeholder="21.000.000-0" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Sitio web</Label>
-                    <Input value={form.website} onChange={(e) => set('website', e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Dirección</Label>
-                    <Input value={form.address} onChange={(e) => set('address', e.target.value)} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Facturación</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Condiciones de pago</Label>
-                  <Input value={form.payment_terms} onChange={(e) => set('payment_terms', e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Pie de página en facturas</Label>
-                  <Textarea
-                    value={form.invoice_footer}
-                    onChange={(e) => set('invoice_footer', e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {error && (
-              <p className="rounded-lg bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
-            )}
-
-            <div className="flex items-center gap-3">
-              <Button type="submit" className="gap-2" disabled={saving}>
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : saved ? (
-                  <Check className="h-4 w-4" />
-                ) : null}
-                {saving ? 'Guardando...' : saved ? 'Guardado' : 'Guardar cambios'}
-              </Button>
+      <main className="page-shell">
+        <div className="max-w-2xl space-y-5">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSave} className="space-y-5">
+
+              {/* Datos de la agencia */}
+              <div className="card-elevated p-5">
+                <p className="heading-card mb-4">Datos de la agencia</p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {([
+                    { key: 'agency_name', label: 'Nombre',     type: 'text',  placeholder: 'Simplemente'          },
+                    { key: 'email',       label: 'Email',      type: 'email', placeholder: 'hola@simplemente.uy'  },
+                    { key: 'phone',       label: 'Teléfono',   type: 'text',  placeholder: '09X XXX XXX'           },
+                    { key: 'rut',         label: 'RUT',        type: 'text',  placeholder: '21.000.000-0'          },
+                    { key: 'website',     label: 'Sitio web',  type: 'url',   placeholder: 'https://simplemente.uy'},
+                    { key: 'address',     label: 'Dirección',  type: 'text',  placeholder: 'Montevideo, Uruguay'   },
+                  ] as Array<{ key: keyof FormState; label: string; type: string; placeholder: string }>
+                  ).map(({ key, label, type, placeholder }) => (
+                    <div key={key}>
+                      <label className="label-admin">{label}</label>
+                      <Input
+                        type={type}
+                        value={form[key]}
+                        onChange={e => set(key, e.target.value)}
+                        placeholder={placeholder}
+                        className="text-[13px]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Facturación */}
+              <div className="card-elevated p-5">
+                <p className="heading-card mb-4">Facturación</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="label-admin">Condiciones de pago</label>
+                    <Input
+                      value={form.payment_terms}
+                      onChange={e => set('payment_terms', e.target.value)}
+                      className="text-[13px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="label-admin">Pie de página en facturas</label>
+                    <Textarea
+                      value={form.invoice_footer}
+                      onChange={e => set('invoice_footer', e.target.value)}
+                      rows={3}
+                      className="text-[13px]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {error && (
+                <p className="rounded-xl border border-destructive/20 bg-destructive/[0.07] px-4 py-3 text-[13px] text-destructive">
+                  {error}
+                </p>
+              )}
+
+              {saved && (
+                <p className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/[0.07] px-4 py-3 text-[13px] text-[var(--badge-success-text)]">
+                  <Check className="h-4 w-4" />
+                  Cambios guardados correctamente.
+                </p>
+              )}
+
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={saving} className="gap-2 h-9 px-5 text-[13px]">
+                  {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {saving ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+              </div>
+
+            </form>
+          )}
+        </div>
       </main>
     </>
   )

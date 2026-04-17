@@ -14,7 +14,8 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://supabase.co",
+      "img-src 'self' data: blob: https://*.supabase.co https://supabase.co https://image.thum.io",
+      "media-src 'self' blob:",
       // In dev, also allow local Supabase (127.0.0.1:543xx)
       `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com${
         process.env.NODE_ENV === 'development'
@@ -29,8 +30,14 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
-  // @react-pdf/renderer uses Node.js fs module — must not be bundled by webpack
-  serverExternalPackages: ['@react-pdf/renderer'],
+  // Node.js-only packages — must not be bundled by webpack
+  serverExternalPackages: [
+    '@react-pdf/renderer',
+    'remotion',
+    '@remotion/renderer',
+    '@remotion/bundler',
+    '@remotion/cli',
+  ],
 
 
   async headers() {

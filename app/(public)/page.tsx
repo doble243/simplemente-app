@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Hero } from '@/components/public/Hero'
 import { ServicesGrid } from '@/components/public/ServicesGrid'
+import { ShowreelSection } from '@/components/public/ShowreelSection'
 import { PortfolioGrid } from '@/components/public/PortfolioGrid'
 import { ContactForm } from '@/components/public/ContactForm'
 import { createClient } from '@/lib/supabase/server'
@@ -33,6 +34,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <ServicesGrid />
+      <ShowreelSection />
       <PortfolioGrid items={portfolioItems} />
       <ContactForm />
     </>

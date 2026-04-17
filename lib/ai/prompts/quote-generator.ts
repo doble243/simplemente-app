@@ -15,12 +15,17 @@ Generá un presupuesto detallado en formato JSON para el siguiente proyecto.
 - Requerimientos específicos: ${requirements.join(', ') || 'No especificados'}
 - Moneda: ${currency}
 
-## Precios de referencia (${currency === 'USD' ? 'USD' : 'UYU - referencia: 1 USD ≈ 42 UYU'})
-- Diseño UX/UI por pantalla: ${currency === 'USD' ? '$50-$150' : '$2,000-$6,000 UYU'}
-- Desarrollo frontend (hora): ${currency === 'USD' ? '$30-$60' : '$1,200-$2,500 UYU'}
-- Integración API/backend (hora): ${currency === 'USD' ? '$40-$80' : '$1,680-$3,360 UYU'}
-- SEO básico: ${currency === 'USD' ? '$100-$300' : '$4,200-$12,600 UYU'}
-- Integración MercadoPago: ${currency === 'USD' ? '$150-$400' : '$6,300-$16,800 UYU'}
+## Precios de referencia en pesos uruguayos (UYU)
+- Landing page completa: $5.000 - $15.000 UYU
+- Diseño UX/UI por pantalla: $1.500 - $4.000 UYU
+- Desarrollo frontend (hora): $800 - $1.500 UYU
+- Integración API/backend (hora): $1.000 - $2.000 UYU
+- SEO básico: $3.000 - $8.000 UYU
+- Tienda online / ecommerce: $20.000 - $50.000 UYU
+- Integración MercadoPago: $4.000 - $8.000 UYU
+- Web app a medida: $40.000 UYU en adelante
+- Mantenimiento mensual: $3.500 - $8.000 UYU/mes
+${currency === 'USD' ? '\nSi el cliente prefiere USD, convertir usando 1 USD ≈ 42 UYU.' : ''}
 
 Respondé ÚNICAMENTE con este JSON (sin markdown, sin explicaciones):
 {

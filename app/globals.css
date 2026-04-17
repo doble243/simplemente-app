@@ -286,4 +286,39 @@
 
   /* ── Focus ring ── */
   .focus-ring    { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1; }
+
+  /* ── Card interactive hover ── */
+  .card-hover {
+    @apply rounded-xl border bg-card transition-all duration-150;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 4%), 0 4px 16px oklch(0 0 0 / 3%);
+  }
+  .card-hover:hover {
+    @apply border-primary/20 bg-accent/30;
+    box-shadow: 0 2px 8px oklch(0 0 0 / 6%), 0 8px 24px oklch(0 0 0 / 4%);
+    transform: translateY(-1px);
+  }
+  .dark .card-hover:hover { box-shadow: 0 2px 8px oklch(0 0 0 / 30%); }
+
+  /* ── Form inputs (admin forms) ── */
+  .input-admin {
+    @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-150;
+    @apply focus:border-primary/50 focus:ring-2 focus:ring-primary/10;
+  }
+  .label-admin { @apply block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1.5; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 py-12 text-center;
+  }
+  .empty-state p { @apply text-[13px] text-muted-foreground; }
+
+  /* ── Section header ── */
+  .section-header { @apply flex items-center justify-between mb-4; }
+
+  /* ── Prose table ── */
+  .table-admin { @apply w-full text-sm border-collapse; }
+  .table-admin thead tr { @apply border-b border-border/60 bg-muted/40 text-left; }
+  .table-admin th { @apply px-4 py-2.5 text-[10.5px] font-semibold uppercase tracking-widest text-muted-foreground; }
+  .table-admin tbody tr { @apply border-b border-border/40 transition-colors hover:bg-accent/40; }
+  .table-admin td { @apply px-4 py-3 text-[13px]; }
 }
