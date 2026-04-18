@@ -136,7 +136,7 @@ const QUICK: Array<{ patterns: string[]; answer: QuickAnswer }> = [
     },
   },
   {
-    patterns: ['que hacen', 'qué hacen', 'que ofrecen', 'qué ofrecen', 'que son', 'qué son', 'a que se dedican', 'a qué se dedican'],
+    patterns: ['que hacen', 'qué hacen', 'q hacen', 'que ofrecen', 'qué ofrecen', 'que son', 'qué son', 'a que se dedican', 'a qué se dedican', 'q ofrecen', 'q son'],
     answer: {
       text: 'Hacemos páginas web, tiendas online y sistemas a medida con IA integrada — todo pensado para que tu negocio venda, no solo para verse bien. ¿Qué tipo de proyecto tenés en mente?',
       suggestions: ['Una página web', 'Una tienda online', 'Algo a medida'],
@@ -226,7 +226,7 @@ const QUICK: Array<{ patterns: string[]; answer: QuickAnswer }> = [
 
   // ── Precios y negociación ──────────────────────────────────────────────────
   {
-    patterns: ['precio', 'cuanto cuesta', 'cuánto cuesta', 'cuanto sale', 'cuánto sale', 'cobran', 'costo', 'valor', 'tarifa', 'presupuesto'],
+    patterns: ['precio', 'cuanto cuesta', 'cuánto cuesta', 'cuanto sale', 'cuánto sale', 'cobran', 'costo', 'valor', 'tarifa', 'presupuesto', 'q cuesta', 'q sale', 'cuanto es', 'cuánto es'],
     answer: {
       text: 'Depende del proyecto — trabajamos con rangos, no precios fijos. ¿Qué tenés en mente: una página, una tienda o algo más complejo?',
       suggestions: ['Página / landing', 'Tienda online', 'Sistema a medida'],
@@ -337,6 +337,13 @@ const QUICK: Array<{ patterns: string[]; answer: QuickAnswer }> = [
     answer: {
       text: 'Lo más fácil es contarme qué necesitás y desde ahí te oriento. ¿Qué tipo de negocio tenés?',
       suggestions: ['Tengo un negocio', 'Es un proyecto nuevo', 'Ver ejemplos'],
+    },
+  },
+  {
+    patterns: ['contar mi proyecto', 'contar mi idea', 'contarte mi proyecto', 'contarte mi idea', 'mi proyecto', 'mi idea'],
+    answer: {
+      text: '¡Perfecto, contame! ¿De qué tipo de negocio o proyecto se trata?',
+      suggestions: ['Tengo un local', 'Es online', 'Las dos cosas'],
     },
   },
   {

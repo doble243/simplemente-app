@@ -98,6 +98,7 @@ export async function POST(request: Request) {
     const result = await aiComplete({
       max_tokens:  280,
       temperature: 0.5,
+      json_mode:   true,
       messages,
     })
     raw = result.text
@@ -110,8 +111,8 @@ export async function POST(request: Request) {
   }
 
   const extracted = extractJSON(raw)
-  const responseText = extracted?.text ?? (raw.replace(/\{[\s\S]*\}/g, '').trim() || '¿Podés contarme un poco más sobre lo que necesitás?')
-  const responseSuggestions = extracted?.suggestions ?? ['¿Cuánto cuesta?', 'Ver ejemplos', 'Contar mi proyecto']
+  const responseText = extracted?.text ?? '¿Podés contarme un poco más? No me quedó claro qué necesitás.'
+  const responseSuggestions = extracted?.suggestions ?? ['Una página web', 'Una tienda online', 'Algo a medida']
 
   // Guardar en DB para entrenamiento (fire-and-forget)
   saveChatLog({ sessionId: sid, userMessage: message, assistantMessage: responseText, ip })

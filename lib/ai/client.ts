@@ -21,10 +21,11 @@ export interface ChatMessage {
 }
 
 interface CompletionOptions {
-  messages:     ChatMessage[]
-  max_tokens?:  number
-  model?:       string
-  temperature?: number
+  messages:        ChatMessage[]
+  max_tokens?:     number
+  model?:          string
+  temperature?:    number
+  json_mode?:      boolean
 }
 
 // ── Non-streaming completion ───────────────────────────────────────────────
@@ -39,11 +40,12 @@ export async function aiComplete(
       Authorization: `Bearer ${AI_API_KEY}`,
     },
     body: JSON.stringify({
-      model:       options.model ?? AI_MODEL,
-      messages:    options.messages,
-      max_tokens:  options.max_tokens,
-      temperature: options.temperature ?? 0.7,
-      stream:      false,
+      model:           options.model ?? AI_MODEL,
+      messages:        options.messages,
+      max_tokens:      options.max_tokens,
+      temperature:     options.temperature ?? 0.7,
+      stream:          false,
+      ...(options.json_mode && { response_format: { type: 'json_object' } }),
     }),
   })
 
