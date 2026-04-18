@@ -132,7 +132,7 @@ export function PortfolioGrid({ items }: PortfolioGridProps) {
   }
 
   return (
-    <section className="relative overflow-hidden bg-[#020D18] py-20">
+    <section id="portfolio" className="relative overflow-hidden bg-[#020D18] py-20">
       <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
       <div className="mx-auto max-w-7xl">

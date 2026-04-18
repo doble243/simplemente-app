@@ -38,6 +38,43 @@ function BotIcon({ spinning = false, size = 18 }: { spinning?: boolean; size?: n
   )
 }
 
+// ─── Typewriter effect for new assistant messages ────────────────────────────
+function TypewriterText({ text, onDone }: { text: string; onDone: () => void }) {
+  const [shown, setShown] = useState('')
+  const [cursorVisible, setCursorVisible] = useState(true)
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
+
+  useEffect(() => {
+    setShown('')
+    setCursorVisible(true)
+    const speed = text.length > 120 ? 9 : text.length > 60 ? 13 : 17
+    let i = 0
+    let timer: ReturnType<typeof setTimeout>
+    function tick() {
+      i++
+      setShown(text.slice(0, i))
+      if (i < text.length) {
+        timer = setTimeout(tick, speed)
+      } else {
+        setCursorVisible(false)
+        onDoneRef.current()
+      }
+    }
+    timer = setTimeout(tick, speed)
+    return () => clearTimeout(timer)
+  }, [text])
+
+  return (
+    <>
+      {shown}
+      {cursorVisible && (
+        <span className="ml-[1px] inline-block h-[0.8em] w-[1.5px] translate-y-[0.1em] rounded-sm bg-violet-400/70 animate-pulse" />
+      )}
+    </>
+  )
+}
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -58,11 +95,36 @@ interface QuickAnswer { text: string; suggestions: string[] }
 
 // Delay realista: simula que alguien está escribiendo
 function typingDelay(text: string): number {
-  // ~40-60ms por palabra, con un mínimo de 900ms y máximo de 2000ms
   const words = text.split(' ').length
   const base = Math.min(Math.max(words * 55, 900), 2000)
-  // Pequeña variación aleatoria para que no sea mecánico
   return base + Math.floor(Math.random() * 300)
+}
+
+// Detecta preguntas de seguimiento/aclaración — deben ir al AI, no al quick match
+function isFollowUpOrClarification(text: string): boolean {
+  const t = text.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return (
+    /^pero\b/.test(t) ||
+    /^o sea\b/.test(t) || /^osea\b/.test(t) ||
+    /^entonces\b/.test(t) ||
+    /^si pero\b/.test(t) || /^y si\b/.test(t) || /^y por\b/.test(t) ||
+    /no puede(n)? ser/.test(t) || /no se puede/.test(t) ||
+    /puede(n)? tener/.test(t) || /puede(n)? ser/.test(t)
+  )
+}
+
+// Señal genuina de compra — solo entonces mostrar el CTA del formulario
+function hasBuyingSignal(text: string): boolean {
+  const t = text.toLowerCase()
+  return (
+    t.includes('quiero') || t.includes('me interesa') ||
+    t.includes('presupuesto') || t.includes('cuanto') || t.includes('cuánto') ||
+    t.includes('necesito') || t.includes('pedir') ||
+    t.includes('mi negocio') || t.includes('mi local') || t.includes('tengo un negocio') ||
+    t.includes('vender') || t.includes('vendo') ||
+    t.includes('contar mi') || t.includes('dejar mis datos') ||
+    t.includes('hacer mi') || t.includes('armar mi')
+  )
 }
 
 const QUICK: Array<{ patterns: string[]; answer: QuickAnswer }> = [
@@ -76,225 +138,238 @@ const QUICK: Array<{ patterns: string[]; answer: QuickAnswer }> = [
   {
     patterns: ['que hacen', 'qué hacen', 'que ofrecen', 'qué ofrecen', 'que son', 'qué son', 'a que se dedican', 'a qué se dedican'],
     answer: {
-      text: 'Creamos páginas web, tiendas online, sistemas a medida y productos digitales para vender y automatizar negocios. No solo hacemos webs — hacemos herramientas reales.',
-      suggestions: ['¿Cuánto cuesta?', 'Ver ejemplos', 'Contar mi proyecto'],
+      text: 'Hacemos páginas web, tiendas online y sistemas a medida con IA integrada — todo pensado para que tu negocio venda, no solo para verse bien. ¿Qué tipo de proyecto tenés en mente?',
+      suggestions: ['Una página web', 'Una tienda online', 'Algo a medida'],
     },
   },
   {
     patterns: ['servicios', 'que tipos', 'qué tipos', 'que tipo de', 'qué tipo de', 'soluciones'],
     answer: {
-      text: 'Tiendas online, sistemas a medida, automatizaciones con IA y vidrieras digitales (pantallas que muestran tus productos solos). Todo pensado para generar ingresos, no solo para verse bien.',
-      suggestions: ['¿Qué es vidriera?', '¿Cuánto cuesta?', 'Contar mi proyecto'],
+      text: 'Landings, tiendas online, sistemas a medida, vidrieras digitales y automatizaciones con IA. ¿Qué necesitás para tu negocio?',
+      suggestions: ['Página web', 'Tienda online', 'Algo a medida'],
+    },
+  },
+
+  // ── Terminología (específicos antes que genéricos) ────────────────────────
+  {
+    patterns: ['que es landing', 'qué es landing', 'que es una landing', 'qué es una landing', 'que significa landing', 'qué significa landing', 'q es landing', 'q es una landing'],
+    answer: {
+      text: 'Una landing page es una sola página web con un objetivo claro: que te contacten, compren o se registren. Sin menú, sin vueltas — va directo al punto. ¿Es eso lo que necesitás?',
+      suggestions: ['Sí, eso necesito', '¿Cuánto sale?', 'Ver ejemplos'],
     },
   },
   {
-    patterns: ['vidriera', 'pantalla', 'cartel digital', 'cartel', 'tv', 'monitor', 'local fisico', 'local físico', 'pantallas', 'digital signage'],
+    patterns: ['que es ecommerce', 'qué es ecommerce', 'que significa ecommerce', 'qué significa ecommerce', 'que es tienda online', 'qué es tienda online', 'q es ecommerce', 'q es tienda'],
     answer: {
-      text: 'La Vidriera Digital son pantallas (TV o monitor) en tu local que muestran productos, ofertas y contenido solos — sin que toques nada. $5.000 UYU, compatible con hasta 10 pantallas a la vez.',
-      suggestions: ['Me interesa', '¿Cuánto cuesta?', 'Contar mi proyecto'],
+      text: 'Una tienda online es donde tus clientes ven tus productos, los agregan al carrito y pagan — como una tienda física pero abierta las 24hs. ¿Tenés productos para vender?',
+      suggestions: ['Sí, quiero vender', '¿Cuánto sale?', 'Ver ejemplos'],
     },
   },
+  {
+    patterns: ['que es seo', 'qué es seo', 'que significa seo', 'qué significa seo', 'como aparezco en google', 'cómo aparezco en google', 'como me encuentran en google', 'cómo me encuentran', 'q es seo'],
+    answer: {
+      text: 'SEO es lo que hace que aparezcas en Google cuando alguien busca tu servicio. Es trabajo técnico en tu sitio para que te recomienden. ¿Querés más visibilidad online?',
+      suggestions: ['Sí, me interesa', '¿Cuánto sale?', 'Contame más'],
+    },
+  },
+  {
+    patterns: ['que es automatizacion', 'qué es automatización', 'que significa automatizar', 'qué significa automatizar', 'que es automatizar', 'q es automatizacion'],
+    answer: {
+      text: 'Automatizar es que el sistema haga cosas solo: un mail cuando te contactan, un turno que se agenda automático, un bot que responde preguntas. ¿Tenés algún proceso manual que te consume tiempo?',
+      suggestions: ['Sí, varios', 'Contame más', '¿Cuánto sale?'],
+    },
+  },
+  {
+    patterns: ['que es un sistema a medida', 'qué es un sistema a medida', 'que es sistema a medida', 'qué es sistema a medida', 'que es webapp', 'qué es webapp', 'que es una web app', 'qué es una web app', 'que es un crm', 'qué es un crm', 'q es sistema', 'q es webapp', 'q es crm'],
+    answer: {
+      text: 'Un sistema a medida es una herramienta digital construida para tu negocio específico — gestión de clientes, turnos, pedidos, lo que necesites. Nada genérico. ¿Tenés algo en mente?',
+      suggestions: ['Gestión de clientes', 'Reservas y turnos', 'Otro'],
+    },
+  },
+  {
+    patterns: ['que es mercadopago', 'qué es mercadopago', 'que significa mercadopago', 'como cobro', 'cómo cobro', 'como recibo pagos', 'cómo recibo pagos', 'q es mercadopago'],
+    answer: {
+      text: 'MercadoPago es la plataforma de pagos más usada en Uruguay: tus clientes pagan con tarjeta o efectivo y vos recibís el dinero en tu cuenta. Lo integramos en todas las tiendas.',
+      suggestions: ['Quiero una tienda', '¿Cuánto sale?', 'Contame más'],
+    },
+  },
+  {
+    patterns: ['no entiendo', 'no entendí', 'no le entiendo', 'no entendi', 'que significa eso', 'qué significa eso', 'me explicas', 'me explicás', 'en terminos simples', 'en términos simples', 'mas simple', 'más simple', 'en simple', 'no sé de esto', 'no se de esto'],
+    answer: {
+      text: '¡Sin drama! ¿Qué es lo que no te quedó claro? Preguntá lo que sea.',
+      suggestions: ['¿Qué es una landing?', '¿Qué es SEO?', '¿Qué es ecommerce?'],
+    },
+  },
+
+  // ── Industrias específicas ─────────────────────────────────────────────────
   {
     patterns: ['chofer', 'remis', 'taxi', 'transporte', 'flete', 'delivery', 'moto', 'rider', 'repartidor', 'llevar personas', 'traslado'],
     answer: {
-      text: 'Para un servicio de transporte o chofer, lo ideal es una landing que muestre tus precios, zonas y permita contactarte fácil. Desde $5.000 UYU, lista en días. ¿Querés un presupuesto?',
-      suggestions: ['Pedir presupuesto', 'Ver ejemplos', 'Contar mi proyecto'],
+      text: 'Para transporte lo ideal es una landing que muestre tus zonas, precios y permita contactarte fácil. ¿Ya tenés logo y contenido, o arrancamos desde cero?',
+      suggestions: ['Tengo el material', 'Arranco de cero', '¿Cuánto sale?'],
     },
   },
   {
     patterns: ['peluqueria', 'peluquería', 'estetica', 'estética', 'spa', 'salon', 'barberia', 'barbería', 'uñas', 'masajes', 'cosmetica', 'cosmética'],
     answer: {
-      text: 'Para belleza o bienestar, lo que más rinde es una web con agenda online + vidriera digital en el local. Captás clientes online y mostrás tu trabajo en pantalla. ¿Qué necesitás primero?',
-      suggestions: ['Sistema de turnos', 'Vidriera digital', 'Pedir presupuesto'],
+      text: 'Para salón o spa lo que más funciona es una web con agenda online — y si tenés local, sumar una Vidriera Digital en pantalla. ¿Qué es lo más urgente para vos?',
+      suggestions: ['Sistema de turnos', 'Página web', 'Vidriera digital'],
     },
   },
   {
-    patterns: ['restaurante', 'bar', 'menu', 'menú', 'comida', 'gastronomia', 'gastronomía', 'cafeteria', 'cafetería', 'pizzeria', 'pizzería', 'heladeria', 'heladería'],
+    patterns: ['restaurante', 'menu ', 'menú ', 'comida', 'gastronomia', 'gastronomía', 'cafeteria', 'cafetería', 'pizzeria', 'pizzería', 'heladeria', 'heladería'],
     answer: {
-      text: 'Para gastro, la Vidriera Digital es ideal: mostrás tu menú, promociones y platos en pantalla sin imprimir nada. $5.000 UYU con hasta 10 pantallas. ¿Te interesa?',
-      suggestions: ['Vidriera digital', 'También quiero web', 'Pedir presupuesto'],
+      text: 'Para gastro la Vidriera Digital es ideal — mostrás tu menú en pantalla sin imprimir nada. También se puede combinar con una web. ¿Tenés pantallas en el local?',
+      suggestions: ['Sí tengo pantallas', 'Solo quiero web', 'Las dos cosas'],
     },
   },
+
+  // ── Precios y negociación ──────────────────────────────────────────────────
   {
     patterns: ['precio', 'cuanto cuesta', 'cuánto cuesta', 'cuanto sale', 'cuánto sale', 'cobran', 'costo', 'valor', 'tarifa', 'presupuesto'],
     answer: {
-      text: 'Depende del proyecto. Siempre buscamos adaptarnos — si el presupuesto es un problema, se habla.',
-      suggestions: ['¿Se puede negociar?', '¿Cuánto demora?', 'Contar mi proyecto'],
+      text: 'Depende del proyecto — trabajamos con rangos, no precios fijos. ¿Qué tenés en mente: una página, una tienda o algo más complejo?',
+      suggestions: ['Página / landing', 'Tienda online', 'Sistema a medida'],
     },
   },
   {
-    patterns: ['negociar', 'negociable', 'descuento', 'mas barato', 'más barato', 'ajustar', 'no tengo mucho'],
+    patterns: ['negociar', 'negociable', 'descuento', 'mas barato', 'más barato', 'ajustar', 'no tengo mucho', 'poco presupuesto'],
     answer: {
-      text: 'Sí. Lo importante es que el proyecto salga. Siempre estamos abiertos a propuestas.',
-      suggestions: ['Contar mi proyecto', 'Dejar mis datos', '¿Cuánto demora?'],
+      text: 'Siempre estamos abiertos — lo importante es que el proyecto salga. ¿Cuánto tenés disponible más o menos?',
+      suggestions: ['Contame mi proyecto', 'Ver opciones', 'Dejar mis datos'],
+    },
+  },
+
+  // ── Servicios genéricos ────────────────────────────────────────────────────
+  {
+    patterns: ['vidriera', 'pantalla', 'cartel digital', 'cartel', 'local fisico', 'local físico', 'pantallas', 'digital signage'],
+    answer: {
+      text: 'La Vidriera Digital muestra tu catálogo u ofertas en pantallas del local sola — funciona con cualquier TV y un dispositivo HDMI. ¿Tenés local físico con pantallas o estás pensando en poner una?',
+      suggestions: ['Tengo pantallas', 'Todavía no tengo', 'Contame más'],
     },
   },
   {
-    patterns: ['landing', 'pagina web', 'página web', 'sitio web', 'presentacion', 'presentación', 'vidriera web'],
+    patterns: ['landing', 'pagina web', 'página web', 'sitio web', 'presentacion', 'presentación'],
     answer: {
-      text: 'Una landing la tenés lista en pocos días, desde $5.000 UYU. Diseño limpio, rápido y que convierte visitas en clientes.',
-      suggestions: ['¿Se puede negociar?', 'Pedir presupuesto', 'Ver ejemplos'],
+      text: 'Una landing es una página enfocada en un solo objetivo: que te contacten o compren. ¿Ya tenés claro para qué negocio o proyecto es?',
+      suggestions: ['Sí, es para mi negocio', 'Todavía explorando', 'Ver ejemplos'],
     },
   },
   {
-    patterns: ['tienda', 'ecommerce', 'vender', 'venta online', 'mercadopago', 'carrito', 'catalogo', 'catálogo'],
+    patterns: ['tienda', 'ecommerce', 'venta online', 'carrito', 'catalogo', 'catálogo'],
     answer: {
-      text: 'Las tiendas online arrancan en $20.000 UYU, con catálogo, carrito y MercadoPago. Lista para vender desde el día uno.',
-      suggestions: ['¿Se puede negociar?', 'Pedir presupuesto', 'Ver ejemplos'],
+      text: 'Para una tienda online lo primero es entender qué vendés y cómo. ¿Tenés muchos productos o arrancás con pocos?',
+      suggestions: ['Pocos productos', 'Catálogo grande', 'Todavía no sé'],
     },
   },
   {
-    patterns: ['sistema', 'aplicacion', 'aplicación', 'webapp', 'web app', 'plataforma', 'gestion', 'gestión', 'a medida', 'crm', 'reservas', 'portal'],
+    patterns: ['vender', 'venta'],
     answer: {
-      text: 'Sistemas a medida desde $40.000 UYU: reservas, CRMs, portales, lo que necesites. ¿Qué tenés en mente?',
-      suggestions: ['Contar mi proyecto', '¿Se puede negociar?', 'Pedir presupuesto'],
+      text: 'Para vender más lo ideal depende de qué vendés y dónde estás hoy. ¿Vendés productos, servicios o algo digital?',
+      suggestions: ['Productos físicos', 'Servicios', 'Algo digital'],
+    },
+  },
+  {
+    patterns: ['sistema', 'aplicacion', 'aplicación', 'webapp', 'web app', 'plataforma', 'gestion', 'gestión', 'crm', 'reservas', 'portal'],
+    answer: {
+      text: 'Hay muchas formas de encarar un sistema — depende del problema que querés resolver. ¿Qué es lo que hoy hacés a mano y te gustaría automatizar?',
+      suggestions: ['Gestión de clientes', 'Reservas y turnos', 'Otra cosa'],
     },
   },
   {
     patterns: ['paquete', 'mensual', 'cuota', 'suscripcion', 'suscripción', 'todo incluido', 'paquete completo'],
     answer: {
-      text: 'El Paquete Completo es $20.000 de entrada + $8.000/mes. Incluye página, sistema, mejoras continuas y contenido para hacer crecer el proyecto.',
-      suggestions: ['Me interesa', '¿Qué incluye?', 'Dejar mis datos'],
+      text: 'Los paquetes mensuales incluyen mantenimiento, mejoras y soporte continuo. El costo depende del proyecto. ¿Es para una tienda o un sistema?',
+      suggestions: ['Para una tienda', 'Para un sistema', 'Contame más'],
     },
   },
   {
-    patterns: ['ia', 'inteligencia artificial', 'automatizacion', 'automatización', 'bot', 'chatbot'],
+    patterns: ['inteligencia artificial', 'chatbot', 'chat bot', 'quiero un bot', 'quiero ia', 'usar ia'],
     answer: {
-      text: 'Integramos IA en todos los proyectos: chatbots, automatizaciones, asistentes. Va incluido, no es un extra.',
-      suggestions: ['Ver paquete completo', 'Contar mi proyecto', '¿Cuánto cuesta?'],
+      text: 'Integramos IA en todos los proyectos — chatbots, automatizaciones, asistentes como este. Va incluido, no es un extra. ¿Tenés algo específico en mente?',
+      suggestions: ['Chatbot para mi web', 'Automatización', 'Ver opciones'],
     },
   },
   {
-    patterns: ['seo', 'posicionamiento', 'google', 'aparecer', 'busqueda', 'búsqueda'],
+    patterns: ['seo', 'posicionamiento', 'aparecer', 'busqueda', 'búsqueda'],
     answer: {
-      text: 'SEO desde $3.500 UYU/mes para posicionarte en Google cuando tus clientes te buscan.',
-      suggestions: ['Pedir presupuesto', '¿Se puede negociar?', 'Contar mi proyecto'],
+      text: 'SEO desde $3.500 UYU/mes para aparecer en Google cuando tus clientes te buscan. ¿Sabés si tu rubro tiene mucha competencia online en Uruguay?',
+      suggestions: ['No sé', 'Hay bastante', 'Contame más'],
     },
   },
   {
     patterns: ['mantenimiento', 'soporte', 'actualizacion', 'actualización', 'ayuda tecnica', 'ayuda técnica'],
     answer: {
-      text: 'Mantenimiento desde $3.500 UYU/mes: actualizaciones, mejoras, soporte. Para que no tengas que preocuparte por nada.',
-      suggestions: ['Ver paquete completo', 'Pedir presupuesto', 'Contar mi proyecto'],
+      text: 'Mantenimiento desde $3.500 UYU/mes: actualizaciones, soporte y mejoras. ¿Tenés un sitio existente o es para un proyecto nuevo?',
+      suggestions: ['Sitio existente', 'Proyecto nuevo', 'Ver opciones'],
     },
   },
   {
-    patterns: ['portfolio', 'portafolio', 'ejemplos', 'trabajos', 'proyectos', 'que hicieron', 'qué hicieron', 'referencias', 'clientes'],
+    patterns: ['portfolio', 'portafolio', 'ejemplos', 'trabajos', 'que hicieron', 'qué hicieron', 'referencias', 'clientes'],
     answer: {
-      text: 'Tenemos proyectos en varios rubros: ropa urbana, accesorios, perfumería, bienestar, productos digitales. Mirá todo acá → simplemente.uy/portfolio',
+      text: 'Tenemos proyectos en varios rubros: ropa urbana, accesorios, perfumería, bienestar, productos digitales. Podés verlos en la sección Portfolio de esta misma página.',
       suggestions: ['Ver portfolio', 'Contar mi proyecto', '¿Cuánto cuesta?'],
     },
   },
   {
-    patterns: ['como funciona', 'cómo funciona', 'como trabajan', 'cómo trabajan', 'proceso', 'pasos', 'como arranco', 'cómo arranco'],
+    patterns: ['como funciona', 'cómo funciona', 'como trabajan', 'cómo trabajan', 'proceso', 'pasos'],
     answer: {
-      text: 'Nos escribís, vemos tu idea y armamos algo concreto para que empieces cuanto antes. Sin vueltas.',
-      suggestions: ['Dejar mis datos', '¿Cuánto demora?', '¿Cuánto cuesta?'],
+      text: 'Charlamos sobre tu proyecto, te damos opciones concretas y arrancamos. Sin vueltas. ¿Querés contarme un poco sobre lo que necesitás?',
+      suggestions: ['Sí, cuento mi idea', 'Ver ejemplos', '¿Cuánto cuesta?'],
     },
   },
   {
     patterns: ['cuanto demora', 'cuánto demora', 'tiempo', 'plazo', 'cuando esta', 'cuándo está', 'rapidez', 'rapido', 'rápido'],
     answer: {
-      text: 'Podés tener algo funcionando en pocos días, dependiendo de la complejidad. Una landing en una semana, una tienda en dos o tres.',
-      suggestions: ['Contar mi proyecto', 'Dejar mis datos', '¿Cuánto cuesta?'],
+      text: 'Una landing: 1–2 semanas. Tienda: 2–4 semanas. Sistemas: depende del alcance, puede ser por etapas. ¿De qué tipo de proyecto estamos hablando?',
+      suggestions: ['Landing page', 'Tienda online', 'Sistema a medida'],
     },
   },
   {
-    patterns: ['para vender', 'para negocio', 'genera ventas', 'sirve para vender', 'solo diseño', 'solo es diseño'],
+    patterns: ['desde cero', 'no tengo nada', 'empezar de cero', 'nunca tuve', 'primera vez'],
     answer: {
-      text: 'Sirve para vender. Todo lo que hacemos está pensado para generar ingresos o clientes — no solo para verse bien.',
-      suggestions: ['Contar mi proyecto', 'Ver ejemplos', '¿Cuánto cuesta?'],
-    },
-  },
-  {
-    patterns: ['desde cero', 'no tengo nada', 'empezar de cero', 'nunca tuve', 'primer', 'primera vez'],
-    answer: {
-      text: 'No hay problema. Podemos construir todo desde cero — dominio, diseño, sistema, lo que necesites.',
-      suggestions: ['Contar mi proyecto', 'Dejar mis datos', '¿Cuánto cuesta?'],
+      text: 'No hay problema, partimos de cero — dominio, diseño, contenido, lo que necesites. ¿Tenés idea del tipo de proyecto o todavía estás explorando?',
+      suggestions: ['Tengo una idea', 'Todavía explorando', 'Ver ejemplos'],
     },
   },
   {
     patterns: ['como arranco', 'cómo arranco', 'como empiezo', 'cómo empiezo', 'quiero empezar', 'donde empiezo', 'dónde empiezo'],
     answer: {
-      text: 'Nos escribís, contás tu idea y armamos algo concreto. Respondemos en menos de 24hs.',
-      suggestions: ['Dejar mis datos', 'Contar mi proyecto', 'Ver ejemplos'],
+      text: 'Lo más fácil es contarme qué necesitás y desde ahí te oriento. ¿Qué tipo de negocio tenés?',
+      suggestions: ['Tengo un negocio', 'Es un proyecto nuevo', 'Ver ejemplos'],
     },
   },
   {
     patterns: ['contacto', 'hablar', 'llamar', 'whatsapp', 'escribir', 'reunion', 'reunión', 'hablar con alguien'],
     answer: {
-      text: 'Completá el formulario y te respondemos hoy mismo. También podés escribirnos por WhatsApp.',
-      suggestions: ['Dejar mis datos', 'Contar mi proyecto', 'Ver ejemplos'],
+      text: 'Podés dejar tus datos en el formulario y te respondemos en el día. ¿Preferís que te contactemos nosotros?',
+      suggestions: ['Dejar mis datos', 'Sí, que me llamen', 'Ver ejemplos'],
     },
   },
   {
     patterns: ['uruguay', 'montevideo', 'donde estan', 'dónde están', 'son de'],
     answer: {
-      text: 'Somos uruguayos, trabajamos con clientes en todo el país y del exterior. Precios en pesos.',
+      text: 'Somos uruguayos, trabajamos con clientes en todo el país y también del exterior. Todo en pesos, sin sorpresas.',
       suggestions: ['¿Cuánto cuesta?', 'Ver ejemplos', 'Contar mi proyecto'],
-    },
-  },
-
-  // ── Explicaciones de terminología ─────────────────────────────────────────
-  {
-    patterns: ['que es landing', 'qué es landing', 'que es una landing', 'qué es una landing', 'que significa landing', 'qué significa landing'],
-    answer: {
-      text: 'Una landing page es UNA página web con un solo objetivo: que te contacten, compren o se registren. No tiene menú ni mil secciones — es directa al punto. Perfecta para lanzar un negocio, producto o servicio rápido.',
-      suggestions: ['¿Cuánto cuesta?', 'Ver ejemplos', 'Me interesa'],
-    },
-  },
-  {
-    patterns: ['que es ecommerce', 'qué es ecommerce', 'que significa ecommerce', 'qué significa ecommerce', 'que es tienda online', 'qué es tienda online'],
-    answer: {
-      text: 'Una tienda online te permite vender por internet: tus clientes ven los productos, los meten al carrito y pagan con tarjeta o MercadoPago. Es como una tienda física, pero abierta las 24hs.',
-      suggestions: ['¿Cuánto cuesta?', 'Ver ejemplos', 'Me interesa'],
-    },
-  },
-  {
-    patterns: ['que es seo', 'qué es seo', 'que significa seo', 'qué significa seo', 'como aparezco en google', 'cómo aparezco en google', 'como me encuentran en google', 'cómo me encuentran'],
-    answer: {
-      text: 'SEO es lo que hace que cuando alguien busca en Google "peluquería en Montevideo" o "remis en Canelones" aparezcas vos primero. Es trabajo técnico en tu web para que Google te recomiende.',
-      suggestions: ['¿Cuánto cuesta?', 'Contar mi proyecto', 'Me interesa'],
-    },
-  },
-  {
-    patterns: ['que es automatizacion', 'qué es automatización', 'que significa automatizar', 'qué significa automatizar', 'que es automatizar'],
-    answer: {
-      text: 'Automatizar = que el sistema haga cosas solo. Por ejemplo: que te llegue un mail cuando alguien llena el formulario, que se agende un turno solo, o que un bot responda preguntas sin que estés vos.',
-      suggestions: ['Me interesa', '¿Cuánto cuesta?', 'Contar mi proyecto'],
-    },
-  },
-  {
-    patterns: ['que es un sistema a medida', 'qué es un sistema a medida', 'que es sistema a medida', 'qué es sistema a medida', 'que es webapp', 'qué es webapp', 'que es una web app', 'qué es una web app', 'que es un crm', 'qué es un crm'],
-    answer: {
-      text: 'Un sistema a medida es una herramienta digital construida para tu negocio específico. Por ejemplo: un panel para gestionar clientes, turnos, pedidos o empleados. Nada genérico — funciona exactamente como necesitás.',
-      suggestions: ['Ver ejemplos', '¿Cuánto cuesta?', 'Contar mi proyecto'],
-    },
-  },
-  {
-    patterns: ['que es mercadopago', 'qué es mercadopago', 'que significa mercadopago', 'como cobro', 'cómo cobro', 'como recibo pagos', 'cómo recibo pagos'],
-    answer: {
-      text: 'MercadoPago es la plataforma de pagos más usada en Uruguay y Argentina. Tus clientes pagan con tarjeta de crédito, débito o efectivo — vos recibís el dinero en tu cuenta. Lo integramos en todas las tiendas.',
-      suggestions: ['Ver tienda online', '¿Cuánto cuesta?', 'Me interesa'],
-    },
-  },
-  {
-    patterns: ['no entiendo', 'no entendí', 'no le entiendo', 'no entendi', 'que significa eso', 'qué significa eso', 'me explicas', 'me explicás', 'en terminos simples', 'en términos simples', 'mas simple', 'más simple', 'en simple', 'no sé de esto', 'no se de esto', 'soy nuevo', 'primera vez'],
-    answer: {
-      text: '¡Sin drama! ¿Qué palabra o cosa no te quedó clara? Podés preguntarme lo que sea y te lo explico simple.',
-      suggestions: ['¿Qué es una landing?', '¿Qué es SEO?', '¿Qué es ecommerce?'],
     },
   },
 ]
 
+// Longest-match wins: prefers the most specific pattern over a generic one
 function quickMatch(text: string): QuickAnswer | null {
   const t = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  let best: QuickAnswer | null = null
+  let bestLen = 0
   for (const { patterns, answer } of QUICK) {
-    if (patterns.some(p => t.includes(p.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))) {
-      return answer
+    for (const p of patterns) {
+      const pn = p.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      if (t.includes(pn) && pn.length > bestLen) {
+        best = answer
+        bestLen = pn.length
+      }
     }
   }
-  return null
+  return best
 }
 
 // ─── Plan detection from text ─────────────────────────────────────────────────
@@ -360,9 +435,40 @@ export function ChatWidget() {
       suggestions: INITIAL_SUGGESTIONS,
     },
   ])
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef             = useRef<HTMLDivElement>(null)
+  const [input, setInput]           = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [animatingIdx, setAnimatingIdx] = useState<number>(-1)
+  const bottomRef                   = useRef<HTMLDivElement>(null)
+  const chatPanelRef                = useRef<HTMLDivElement>(null)
+
+  // Trigger typewriter when a new assistant message arrives (skip index 0 = greeting)
+  useEffect(() => {
+    const lastIdx = messages.length - 1
+    if (lastIdx > 0 && messages[lastIdx]?.role === 'assistant') {
+      setAnimatingIdx(lastIdx)
+    }
+  }, [messages.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reposicionar el panel cuando el teclado virtual sube en móvil (iOS/Android)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    function adjust() {
+      if (!chatPanelRef.current || !vv) return
+      const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      chatPanelRef.current.style.bottom = `${keyboardH + 88}px`
+    }
+    vv.addEventListener('resize', adjust)
+    vv.addEventListener('scroll', adjust)
+    return () => {
+      vv.removeEventListener('resize', adjust)
+      vv.removeEventListener('scroll', adjust)
+    }
+  }, [])
+
+  const handleTypeDone = useCallback((idx: number) => {
+    setAnimatingIdx(prev => prev === idx ? -1 : prev)
+  }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setPulse(false), 8000)
@@ -402,10 +508,13 @@ export function ChatWidget() {
     setPulse(false)
     setInput('')
 
-    // Detect intent from user message
+    // Track topic intent for form pre-filling
     const newIntent = detectIntent(content)
     if (Object.keys(newIntent).length > 0) {
       setIntent(prev => ({ ...prev, ...newIntent }))
+    }
+    // Show Form CTA only on genuine buying signals, not informational questions
+    if (hasBuyingSignal(content)) {
       setShowFormCTA(true)
     }
 
@@ -415,23 +524,29 @@ export function ChatWidget() {
       return
     }
 
+    // Scroll to portfolio section
+    if (content.toLowerCase().includes('ver portfolio')) {
+      setOpen(false)
+      setTimeout(() => {
+        document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 200)
+      return
+    }
+
     setMessages(prev => [
       ...prev.map(m => ({ ...m, suggestions: undefined })),
       { role: 'user', content },
     ])
     setLoading(true)
 
-    // ── Try quick answer with human-like typing delay ──
+    // ── Try quick answer — skip if follow-up/clarification or already answered ──
     const quick = quickMatch(content)
-    if (quick) {
+    const alreadySaid = quick ? messages.some(m => m.role === 'assistant' && m.content === quick.text) : false
+    const followUp = isFollowUpOrClarification(content)
+
+    if (quick && !alreadySaid && !followUp) {
       const delay = typingDelay(quick.text)
       await new Promise(resolve => setTimeout(resolve, delay))
-      // Detect intent
-      const qi = detectIntent(content)
-      if (Object.keys(qi).length > 0) {
-        setIntent(prev => ({ ...prev, ...qi }))
-        setShowFormCTA(true)
-      }
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: quick.text,
@@ -448,7 +563,7 @@ export function ChatWidget() {
         body:    JSON.stringify({
           message:   content,
           sessionId,
-          history:   messages.slice(-10).map(({ role, content }) => ({ role, content })),
+          history:   messages.slice(-14).map(({ role, content }) => ({ role, content })),
         }),
       })
       if (!res.ok) throw new Error()
@@ -567,6 +682,7 @@ export function ChatWidget() {
 
       {/* ── Chat panel ── */}
       <div
+        ref={chatPanelRef}
         className="fixed bottom-[88px] right-3 sm:right-6 z-50 flex flex-col overflow-hidden rounded-[24px] shadow-2xl w-[calc(100vw-24px)] max-w-[400px]"
         style={{
           maxHeight:      open ? 'min(620px, calc(100dvh - 160px))' : 0,
@@ -624,12 +740,16 @@ export function ChatWidget() {
                     : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', borderRadius: '4px 18px 18px 18px' }
                   }
                 >
-                  {msg.content}
+                  {msg.role === 'assistant' && i === animatingIdx
+                    ? <TypewriterText text={msg.content} onDone={() => handleTypeDone(i)} />
+                    : msg.content
+                  }
                 </div>
               </div>
 
-              {/* Quick reply chips */}
-              {msg.role === 'assistant' && i === lastAssistantIdx && !loading && msg.suggestions?.length ? (
+              {/* Quick reply chips — solo cuando terminó de escribir */}
+              {msg.role === 'assistant' && i === lastAssistantIdx && !loading &&
+               animatingIdx === -1 && msg.suggestions?.length ? (
                 <div className="ml-9 flex flex-wrap gap-1.5">
                   {msg.suggestions.map(s => (
                     <button key={s} onClick={() => sendMessage(s)}
@@ -690,8 +810,8 @@ export function ChatWidget() {
             disabled={loading}
             inputMode="text"
             autoComplete="off"
-            style={{ fontSize: '16px' }}
-            className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2 text-white placeholder:text-white/25 outline-none transition-all duration-200 focus:border-violet-500/40 focus:bg-white/[0.07]"
+            style={{ fontSize: '16px', touchAction: 'manipulation' }}
+            className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2 text-base text-white placeholder:text-white/25 outline-none transition-all duration-200 focus:border-violet-500/40 focus:bg-white/[0.07]"
           />
           <button onClick={() => sendMessage()} disabled={loading || !input.trim()}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-30"

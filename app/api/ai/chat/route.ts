@@ -8,7 +8,7 @@ const schema = z.object({
   message: z.string().min(1).max(1000),
   history: z
     .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string() }))
-    .max(20)
+    .max(30)
     .default([]),
   sessionId: z.string().optional(),
   leadData: z
@@ -84,8 +84,8 @@ export async function POST(request: Request) {
     }).then(() => {}, console.error)
   }
 
-  // Solo los últimos 6 mensajes para contexto
-  const recentHistory = history.slice(-6)
+  // Usar todo el historial (el cliente ya lo limita a 10 mensajes)
+  const recentHistory = history
 
   const messages = [
     { role: 'system' as const, content: CHATBOT_SYSTEM_PROMPT },
@@ -96,8 +96,8 @@ export async function POST(request: Request) {
   let raw: string
   try {
     const result = await aiComplete({
-      max_tokens:  200,
-      temperature: 0.35,
+      max_tokens:  280,
+      temperature: 0.5,
       messages,
     })
     raw = result.text
