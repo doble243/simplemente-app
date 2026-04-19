@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { aiComplete, AI_LIMITS } from '@/lib/ai/client'
 import { buildLeadQualifyPrompt } from '@/lib/ai/prompts/lead-qualify'
 import { rateLimit, getClientIP } from '@/lib/rate-limit'
+import { sendLeadNotification } from '@/lib/email'
 
 const schema = z.object({
   name: z.string().min(1),
@@ -65,8 +66,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Database error' }, { status: 500 })
   }
 
-  // Trigger AI qualification asynchronously (don't wait)
+  // Fire-and-forget: AI qualification + email notification
   qualifyLead(lead.id, data).catch(console.error)
+  sendLeadNotification({ name: data.name, email: data.email, phone: data.phone, company: data.company, message: data.message }).catch(console.error)
 
   return NextResponse.json({ id: lead.id }, { status: 201 })
 }
