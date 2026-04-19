@@ -50,7 +50,17 @@
       "Bash(ffmpeg -i \"https://stream.mux.com/DudsRLermQWA5JMpF6Z49AwuAjrvO00vxmsgSyS00neo00.m3u8\" -ss 10 -vframes 1 -update 1 /tmp/frame10.png -y)",
       "Bash(npx tsc *)",
       "Bash(npm ci *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/ai/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hola, quiero hacer una web para mi negocio\",\"history\":[]}')",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx|json|md\\)$\")",
+      "Bash(npx vercel *)",
+      "Bash(vercel --prod)",
+      "Bash(curl -s -X POST http://localhost:3000/api/ai/chat -H \"Content-Type: application/json\" -d '{\"message\":\"cuánto sale una landing\",\"history\":[],\"sessionId\":\"test-cap-1\",\"leadCaptured\":true}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/ai/chat -H \"Content-Type: application/json\" -d '{\"message\":\"dale, mándame un correo con la info\",\"history\":[],\"sessionId\":\"test-cap-2\",\"leadCaptured\":false}')",
+      "Bash(node node_modules/next/dist/bin/next build --no-lint)",
+      "Bash(npx remotion *)",
+      "Bash(gh auth *)"
     ]
   }
 }

@@ -34,14 +34,14 @@ export function Navbar() {
       <header
         className={`fixed top-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? 'border-b border-white/[0.06] bg-[#020D18]/90 backdrop-blur-xl'
+            ? 'border-b border-foreground/[0.06] bg-background/90 backdrop-blur-xl'
             : 'bg-transparent'
         }`}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 text-white" onClick={() => setOpen(false)}>
+          <Link href="/" className="flex items-center gap-2.5 text-foreground" onClick={() => setOpen(false)}>
             <img src="/logo.svg" alt="Simplemente" width={30} height={30} />
             <span className="text-[15px] font-semibold tracking-tight">Simplemente</span>
           </Link>
@@ -52,7 +52,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative text-sm text-white/50 transition-colors duration-200 hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+                className="relative text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
               >
                 {link.label}
               </Link>
@@ -67,14 +67,14 @@ export function Navbar() {
               className="group relative inline-flex h-9 items-center overflow-hidden rounded-lg px-5 text-sm font-medium text-white transition-all duration-300"
             >
               <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary to-violet-500 opacity-100 transition-opacity duration-300 group-hover:opacity-80" />
-              <span className="absolute inset-[1px] rounded-[7px] bg-[#020D18] transition-colors duration-300 group-hover:bg-[#0a0a1f]" />
-              <span className="relative">Hablemos</span>
+              <span className="absolute inset-[1px] rounded-[7px] bg-background transition-colors duration-300 group-hover:bg-muted" />
+              <span className="relative text-foreground">Hablemos</span>
             </Link>
           </div>
 
           {/* Mobile toggle */}
           <button
-            className="relative z-[60] flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/70 transition-all duration-200 hover:border-white/[0.14] hover:bg-white/[0.08] hover:text-white md:hidden"
+            className="relative z-[60] flex h-10 w-10 items-center justify-center rounded-xl border border-foreground/[0.08] bg-foreground/[0.04] text-foreground/70 transition-all duration-200 hover:border-foreground/[0.14] hover:bg-foreground/[0.08] hover:text-foreground md:hidden"
             onClick={() => setOpen(!open)}
             aria-label="Menú"
           >
@@ -105,11 +105,8 @@ export function Navbar() {
       >
         {/* Blurred backdrop */}
         <div
-          className="absolute inset-0"
-          style={{
-            background:     'rgba(2, 8, 22, 0.97)',
-            backdropFilter: 'blur(28px)',
-          }}
+          className="absolute inset-0 backdrop-blur-[28px]"
+          style={{ background: 'var(--pub-overlay-bg)' }}
         />
 
         {/* Decorative orbs */}
@@ -138,7 +135,7 @@ export function Navbar() {
           >
             <button
               onClick={() => setOpen(false)}
-              className="group flex items-center gap-2 rounded-xl border border-white/[0.09] bg-white/[0.04] px-4 py-2 text-[13px] font-semibold text-white/60 transition-all duration-200 hover:border-white/[0.16] hover:bg-white/[0.08] hover:text-white"
+              className="group flex items-center gap-2 rounded-xl border border-foreground/[0.09] bg-foreground/[0.04] px-4 py-2 text-[13px] font-semibold text-foreground/60 transition-all duration-200 hover:border-foreground/[0.16] hover:bg-foreground/[0.08] hover:text-foreground"
             >
               <svg
                 className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -159,7 +156,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="group flex items-center justify-between rounded-2xl px-4 py-4 transition-all duration-200 hover:bg-white/[0.04]"
+                  className="group flex items-center justify-between rounded-2xl px-4 py-4 transition-all duration-200 hover:bg-foreground/[0.04]"
                   style={{
                     transform:  open ? 'translateY(0)' : 'translateY(20px)',
                     opacity:    open ? 1 : 0,
@@ -167,13 +164,13 @@ export function Navbar() {
                   }}
                 >
                   <div>
-                    <p className="text-[28px] font-bold tracking-tight text-white/90 leading-none">
+                    <p className="text-[28px] font-bold tracking-tight text-foreground/90 leading-none">
                       {link.label}
                     </p>
-                    <p className="mt-1 text-[12px] text-white/30 font-medium">{link.sub}</p>
+                    <p className="mt-1 text-[12px] text-foreground/30 font-medium">{link.sub}</p>
                   </div>
                   <div
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/30 transition-all duration-200 group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-foreground/[0.08] bg-foreground/[0.04] text-foreground/30 transition-all duration-200 group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary"
                   >
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </div>
@@ -191,7 +188,7 @@ export function Navbar() {
             }}
           >
             {/* Separator */}
-            <div className="mb-6 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+            <div className="mb-6 h-px bg-gradient-to-r from-transparent via-foreground/[0.08] to-transparent" />
 
             <Link
               href="/contacto"
@@ -206,7 +203,7 @@ export function Navbar() {
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
 
-            <p className="mt-4 text-center text-[11px] text-white/20">
+            <p className="mt-4 text-center text-[11px] text-foreground/20">
               Respondemos en menos de 24 horas · Uruguay
             </p>
           </div>

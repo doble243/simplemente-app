@@ -157,7 +157,7 @@ export function Hero() {
   const tiltY  = mouse.x * 7
 
   return (
-    <section className="relative h-screen overflow-hidden bg-[#020D18]">
+    <section className="relative h-screen overflow-hidden bg-background">
 
       {/* ── Primary orb ── */}
       <div
@@ -193,7 +193,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 opacity-[0.022]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
+            'linear-gradient(rgba(var(--pub-bg-hex),0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--pub-bg-hex),0.6) 1px, transparent 1px)',
           backgroundSize: '80px 80px',
           transform:      `translate(${mouse.x * 10}px, ${mouse.y * 10}px)`,
           transition:     'transform 250ms ease',
@@ -201,7 +201,12 @@ export function Hero() {
       />
 
       {/* ── Vignette ── */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#020D18]/60 via-transparent to-[#020D18]/80" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `linear-gradient(to bottom, rgba(var(--pub-bg-hex),0.6) 0%, transparent 30%, transparent 65%, rgba(var(--pub-bg-hex),0.8) 100%)`,
+        }}
+      />
 
       {/* ── Slides ── */}
       {SLIDES.map((s, i) => (
@@ -232,7 +237,7 @@ export function Hero() {
                 height:          6,
                 backgroundColor: i === idx
                   ? slide.hex
-                  : 'rgba(255,255,255,0.18)',
+                  : 'var(--pub-inactive-dot)',
               }}
             />
           </button>
@@ -247,14 +252,14 @@ export function Hero() {
         >
           {String(idx + 1).padStart(2, '0')}
         </span>
-        <span className="text-white/20 text-[11px]">/</span>
-        <span className="text-white/20 text-[11px] tabular-nums">
+        <span className="text-foreground/20 text-[11px]">/</span>
+        <span className="text-foreground/20 text-[11px] tabular-nums">
           {String(SLIDES.length).padStart(2, '0')}
         </span>
       </div>
 
       {/* ── Progress bar ── */}
-      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-white/[0.04] z-20">
+      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-foreground/[0.04] z-20">
         <div
           className="h-full"
           style={{
@@ -267,7 +272,7 @@ export function Hero() {
       </div>
 
       {/* ── Ticker ── */}
-      <Ticker accentColor={slide.hex} />
+      <Ticker accentColor={slide.hex} r={slide.r} g={slide.g} b={slide.b} />
     </section>
   )
 }
@@ -316,10 +321,10 @@ function SlideContent({
 
           {/* Headline */}
           <h1 className="mb-6 font-black leading-[0.90] tracking-[-0.03em]">
-            <span className="block text-[clamp(2.8rem,7vw,6.5rem)] text-white">
+            <span className="block text-[clamp(2.8rem,7vw,6.5rem)] text-foreground">
               {slide.line1}
             </span>
-            <span className="block text-[clamp(2.8rem,7vw,6.5rem)] text-white/55">
+            <span className="block text-[clamp(2.8rem,7vw,6.5rem)] text-foreground/55">
               {slide.line2}
             </span>
             <span
@@ -336,7 +341,7 @@ function SlideContent({
           </h1>
 
           {/* Body */}
-          <p className="mb-10 max-w-[480px] text-[1.05rem] leading-relaxed text-white/38">
+          <p className="mb-10 max-w-[480px] text-[1.05rem] leading-relaxed text-foreground/38">
             {slide.body}
           </p>
 
@@ -356,7 +361,7 @@ function SlideContent({
 
             <Link
               href={slide.ghost.href}
-              className="inline-flex h-[52px] items-center gap-2 rounded-xl border border-white/[0.09] bg-white/[0.03] px-8 text-[13px] font-medium text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.18] hover:bg-white/[0.07] hover:text-white"
+              className="inline-flex h-[52px] items-center gap-2 rounded-xl border border-foreground/[0.09] bg-foreground/[0.03] px-8 text-[13px] font-medium text-foreground/50 backdrop-blur-sm transition-all duration-300 hover:border-foreground/[0.18] hover:bg-foreground/[0.07] hover:text-foreground"
             >
               {slide.ghost.label}
             </Link>
@@ -396,8 +401,8 @@ function FloatingCard({ slide }: { slide: Slide }) {
 
       {/* Card */}
       <div
-        className="relative rounded-[28px] border border-white/[0.07] p-7 overflow-hidden"
-        style={{ background: 'rgba(6, 10, 28, 0.82)', backdropFilter: 'blur(20px)' }}
+        className="relative rounded-[28px] border border-foreground/[0.07] p-7 overflow-hidden"
+        style={{ background: 'var(--pub-glass-bg)', backdropFilter: 'blur(20px)' }}
       >
         {/* Top accent shimmer */}
         <div
@@ -417,16 +422,16 @@ function FloatingCard({ slide }: { slide: Slide }) {
         <div className="grid grid-cols-3 gap-4 mb-6">
           {slide.card.stats.map((stat, i) => (
             <div key={i}>
-              <p className="text-[1.6rem] font-black text-white leading-tight mb-1">
+              <p className="text-[1.6rem] font-black text-foreground leading-tight mb-1">
                 {stat.val}
               </p>
-              <p className="text-[10px] text-white/35 leading-snug">{stat.label}</p>
+              <p className="text-[10px] text-foreground/35 leading-snug">{stat.label}</p>
             </div>
           ))}
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-white/[0.05] mb-4" />
+        <div className="h-px bg-foreground/[0.05] mb-4" />
 
         {/* Mini bar chart */}
         <div className="flex items-end gap-1 h-11 mb-2">
@@ -442,7 +447,7 @@ function FloatingCard({ slide }: { slide: Slide }) {
             />
           ))}
         </div>
-        <p className="text-[9px] text-white/18 uppercase tracking-[0.18em]">
+        <p className="text-[9px] text-foreground/18 uppercase tracking-[0.18em]">
           Rendimiento del proyecto
         </p>
 
@@ -455,9 +460,9 @@ function FloatingCard({ slide }: { slide: Slide }) {
 
       {/* Floating "live" badge */}
       <div
-        className="absolute -top-3 -right-3 flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] font-bold backdrop-blur-sm"
+        className="absolute -top-3 -right-3 flex items-center gap-1.5 rounded-full border border-foreground/[0.08] px-3 py-1.5 text-[10px] font-bold backdrop-blur-sm"
         style={{
-          background: 'rgba(6,10,28,0.90)',
+          background: 'var(--pub-glass-bg)',
           color:       slide.hex,
         }}
       >
@@ -470,10 +475,10 @@ function FloatingCard({ slide }: { slide: Slide }) {
 
       {/* Floating mini-badge bottom-left */}
       <div
-        className="absolute -bottom-3 -left-3 flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] font-bold backdrop-blur-sm"
+        className="absolute -bottom-3 -left-3 flex items-center gap-1.5 rounded-full border border-foreground/[0.08] px-3 py-1.5 text-[10px] font-bold backdrop-blur-sm"
         style={{
-          background: 'rgba(6,10,28,0.90)',
-          color:      'rgba(255,255,255,0.5)',
+          background: 'var(--pub-glass-bg)',
+          color:      'var(--muted-foreground)',
         }}
       >
         <span className="text-[10px]">🇺🇾</span>
@@ -491,7 +496,7 @@ const TICKER_WORDS = [
   'SEO', '·', 'SISTEMA COMPLETO', '·', 'URUGUAY', '·',
 ]
 
-function Ticker({ accentColor }: { accentColor: string }) {
+function Ticker({ accentColor, r, g, b }: { accentColor: string; r: number; g: number; b: number }) {
   const words = [...TICKER_WORDS, ...TICKER_WORDS]
 
   return (
@@ -506,8 +511,8 @@ function Ticker({ accentColor }: { accentColor: string }) {
             className="text-[10px] font-black uppercase tracking-[0.22em] shrink-0"
             style={{
               color: word === '·'
-                ? `rgba(${accentColor === '#6c63ff' ? '108,99,255' : accentColor === '#06b6d4' ? '6,182,212' : accentColor === '#a855f7' ? '168,85,247' : '34,197,94'},0.5)`
-                : 'rgba(255,255,255,0.10)',
+                ? `rgba(${r},${g},${b},0.5)`
+                : 'var(--pub-ticker-word)',
               transition: 'color 800ms ease',
             }}
           >

@@ -20,9 +20,9 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const fieldClass =
-  'w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none transition-all duration-200 focus:border-primary/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-primary/20'
+  'w-full rounded-xl border border-foreground/[0.08] bg-foreground/[0.04] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/25 outline-none transition-all duration-200 focus:border-primary/50 focus:bg-foreground/[0.06] focus:ring-1 focus:ring-primary/20'
 
-const labelClass = 'block text-xs font-medium uppercase tracking-widest text-white/40 mb-1.5'
+const labelClass = 'block text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1.5'
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
@@ -75,7 +75,7 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <section id="contacto" className="relative overflow-hidden bg-[#030E1A] py-28">
+      <section id="contacto" className="relative overflow-hidden bg-background py-28">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.10] blur-[100px]" />
         </div>
@@ -83,8 +83,8 @@ export function ContactForm() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-green-500/20 bg-green-500/[0.08]">
             <CheckCircle2 className="h-10 w-10 text-green-400" />
           </div>
-          <h2 className="mb-4 text-3xl font-bold text-white">¡Recibimos tu mensaje!</h2>
-          <p className="text-white/40">
+          <h2 className="mb-4 text-3xl font-bold text-foreground">¡Recibimos tu mensaje!</h2>
+          <p className="text-foreground/40">
             Te vamos a contactar en las próximas 24 horas para hablar sobre tu proyecto.
           </p>
         </div>
@@ -93,7 +93,7 @@ export function ContactForm() {
   }
 
   return (
-    <section id="contacto" className="relative overflow-hidden bg-[#030E1A] py-28">
+    <section id="contacto" className="relative overflow-hidden bg-background py-28">
 
       {/* Background glows */}
       <div className="pointer-events-none absolute inset-0">
@@ -112,8 +112,8 @@ export function ContactForm() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Contacto
             </p>
-            <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">¿Hablamos?</h2>
-            <p className="text-white/40">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">¿Hablamos?</h2>
+            <p className="text-foreground/40">
               Contanos sobre tu proyecto y te respondemos en menos de 24 horas.
             </p>
           </div>
@@ -161,26 +161,26 @@ export function ContactForm() {
               <div>
                 <label htmlFor="project_type" className={labelClass}>Tipo de proyecto</label>
                 <select id="project_type" {...register('project_type')} className={fieldClass}>
-                  <option value="" className="bg-[#0A1628]">Seleccioná...</option>
-                  <option value="landing" className="bg-[#0A1628]">Landing page</option>
-                  <option value="ecommerce" className="bg-[#0A1628]">Tienda online</option>
-                  <option value="web_app" className="bg-[#0A1628]">Aplicación web</option>
-                  <option value="seo" className="bg-[#0A1628]">SEO</option>
-                  <option value="maintenance" className="bg-[#0A1628]">Mantenimiento</option>
-                  <option value="other" className="bg-[#0A1628]">Otro</option>
+                  <option value="" className="bg-background">Seleccioná...</option>
+                  <option value="landing" className="bg-background">Landing page</option>
+                  <option value="ecommerce" className="bg-background">Tienda online</option>
+                  <option value="web_app" className="bg-background">Aplicación web</option>
+                  <option value="seo" className="bg-background">SEO</option>
+                  <option value="maintenance" className="bg-background">Mantenimiento</option>
+                  <option value="other" className="bg-background">Otro</option>
                 </select>
               </div>
 
               <div>
                 <label htmlFor="budget_range" className={labelClass}>Presupuesto estimado</label>
                 <select id="budget_range" {...register('budget_range')} className={fieldClass}>
-                  <option value="" className="bg-[#0A1628]">Seleccioná...</option>
-                  <option value="lt5k"      className="bg-[#0A1628]">Menos de $5.000 UYU</option>
-                  <option value="5k-10k"    className="bg-[#0A1628]">$5.000 – $10.000 UYU</option>
-                  <option value="10k-20k"   className="bg-[#0A1628]">$10.000 – $20.000 UYU</option>
-                  <option value="20k-40k"   className="bg-[#0A1628]">$20.000 – $40.000 UYU</option>
-                  <option value="gt40k"     className="bg-[#0A1628]">Más de $40.000 UYU</option>
-                  <option value="paquete"   className="bg-[#0A1628]">Paquete completo ($20K + $8K/mes)</option>
+                  <option value="" className="bg-background">Seleccioná...</option>
+                  <option value="lt5k"      className="bg-background">Menos de $5.000 UYU</option>
+                  <option value="5k-10k"    className="bg-background">$5.000 – $10.000 UYU</option>
+                  <option value="10k-20k"   className="bg-background">$10.000 – $20.000 UYU</option>
+                  <option value="20k-40k"   className="bg-background">$20.000 – $40.000 UYU</option>
+                  <option value="gt40k"     className="bg-background">Más de $40.000 UYU</option>
+                  <option value="paquete"   className="bg-background">Paquete completo ($20K + $8K/mes)</option>
                 </select>
               </div>
             </div>

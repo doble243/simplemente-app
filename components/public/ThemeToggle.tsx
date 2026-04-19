@@ -1,37 +1,26 @@
 'use client'
 
+import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Sun, Moon } from 'lucide-react'
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(true)
+  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    const stored = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const isDark = stored ? stored === 'dark' : prefersDark
-    setDark(isDark)
-    document.documentElement.classList.toggle('dark', isDark)
-    setMounted(true)
-  }, [])
-
-  function toggle() {
-    const next = !dark
-    setDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    localStorage.setItem('theme', next ? 'dark' : 'light')
-  }
+  useEffect(() => { setMounted(true) }, [])
 
   if (!mounted) return null
 
+  const isDark = theme === 'dark'
+
   return (
     <button
-      onClick={toggle}
-      aria-label={dark ? 'Activar modo claro' : 'Activar modo oscuro'}
-      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-white/[0.14] hover:bg-white/[0.08] hover:text-white"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+      className="flex h-9 w-9 items-center justify-center rounded-xl border border-foreground/[0.08] bg-foreground/[0.04] text-foreground/50 transition-all duration-200 hover:border-foreground/[0.14] hover:bg-foreground/[0.08] hover:text-foreground"
     >
-      {dark
+      {isDark
         ? <Sun  className="h-4 w-4" />
         : <Moon className="h-4 w-4" />
       }

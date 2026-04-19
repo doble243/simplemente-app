@@ -48,7 +48,7 @@ const services = [
 
 export function ServicesGrid() {
   return (
-    <section className="relative overflow-hidden bg-[#030E1A] py-28">
+    <section className="relative overflow-hidden bg-background py-28">
 
       {/* Top separator */}
       <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
@@ -60,10 +60,10 @@ export function ServicesGrid() {
           <p className="mb-3 text-[10px] font-black uppercase tracking-[0.24em] text-primary">
             Servicios
           </p>
-          <h2 className="text-4xl font-black leading-[1.0] tracking-tight text-white md:text-5xl">
+          <h2 className="text-4xl font-black leading-[1.0] tracking-tight text-foreground md:text-5xl">
             ¿Qué hacemos?
           </h2>
-          <p className="mt-4 text-[1.05rem] leading-relaxed text-white/40">
+          <p className="mt-4 text-[1.05rem] leading-relaxed text-foreground/40">
             Desde una landing simple hasta un sistema completo.
             Siempre con tecnología moderna y precios honestos para Uruguay.
           </p>
@@ -84,8 +84,8 @@ export function ServicesGrid() {
                   }}
                 />
                 <div
-                  className="relative flex h-full flex-col rounded-2xl border border-white/[0.06] p-6 transition-all duration-300 group-hover:border-transparent"
-                  style={{ background: 'rgba(10, 14, 32, 0.95)' }}
+                  className="relative flex h-full flex-col rounded-2xl border border-foreground/[0.06] p-6 transition-all duration-300 group-hover:border-transparent"
+                  style={{ background: 'var(--pub-service-bg)' }}
                 >
                   {/* Icon */}
                   <div
@@ -99,8 +99,8 @@ export function ServicesGrid() {
                     <Icon className="h-5 w-5" />
                   </div>
 
-                  <h3 className="mb-2 text-[15px] font-bold text-white">{service.title}</h3>
-                  <p className="mb-5 flex-1 text-[13px] leading-relaxed text-white/42">
+                  <h3 className="mb-2 text-[15px] font-bold text-foreground">{service.title}</h3>
+                  <p className="mb-5 flex-1 text-[13px] leading-relaxed text-foreground/42">
                     {service.description}
                   </p>
 
@@ -124,8 +124,8 @@ export function ServicesGrid() {
         </div>
 
         {/* ── Paquete Completo CTA card ── */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/[0.06]"
-          style={{ background: 'rgba(10, 14, 32, 0.95)' }}>
+        <div className="relative overflow-hidden rounded-3xl border border-foreground/[0.06]"
+          style={{ background: 'var(--pub-service-bg)' }}>
 
           {/* Background accent */}
           <div
@@ -146,10 +146,10 @@ export function ServicesGrid() {
                 <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary">
                   ⭐ Paquete Completo
                 </div>
-                <h3 className="text-xl font-black text-white">
+                <h3 className="text-xl font-black text-foreground">
                   $20.000 UYU entrada + $8.000 UYU/mes
                 </h3>
-                <p className="mt-1 text-[13px] text-white/40 max-w-lg">
+                <p className="mt-1 text-[13px] text-foreground/40 max-w-lg">
                   Página web + sistema de gestión completo. El mantenimiento mensual incluye mejoras continuas,
                   creación de contenido e inteligencia artificial para hacer crecer tu proyecto.
                 </p>
@@ -168,7 +168,7 @@ export function ServicesGrid() {
       </div>
 
       {/* Bottom separator */}
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-foreground/[0.05] to-transparent" />
     </section>
   )
 }

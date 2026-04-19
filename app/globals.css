@@ -106,6 +106,15 @@
   --sidebar-border:              oklch(0.900 0.008 264);
   --sidebar-ring:                oklch(0.452 0.162 264);
 
+  /* Public section glass morphism tokens */
+  --pub-glass-bg:        rgba(255,255,255,0.88);
+  --pub-service-bg:      rgba(245,245,252,0.95);
+  --pub-overlay-bg:      rgba(247,247,250,0.97);
+  --pub-ticker-word:     rgba(0,0,0,0.10);
+  --pub-inactive-dot:    rgba(0,0,0,0.18);
+  --pub-skeleton-bg:     rgba(0,0,0,0.06);
+  --pub-bg-hex:          247, 247, 250;
+
   /* Semantic badge tokens */
   --badge-success-bg:    oklch(0.958 0.038 148);
   --badge-success-text:  oklch(0.380 0.105 148);
@@ -172,6 +181,15 @@
   --sidebar-accent-foreground:   oklch(0.938 0.007 264);
   --sidebar-border:              oklch(1 0.006 264 / 8%);
   --sidebar-ring:                oklch(0.595 0.172 264);
+
+  /* Public section glass morphism tokens — dark */
+  --pub-glass-bg:        rgba(6,10,28,0.82);
+  --pub-service-bg:      rgba(10,14,32,0.95);
+  --pub-overlay-bg:      rgba(2,8,22,0.97);
+  --pub-ticker-word:     rgba(255,255,255,0.10);
+  --pub-inactive-dot:    rgba(255,255,255,0.18);
+  --pub-skeleton-bg:     rgba(255,255,255,0.04);
+  --pub-bg-hex:          2, 13, 24;
 
   /* Semantic badge tokens — dark variants */
   --badge-success-bg:    oklch(0.360 0.085 148 / 35%);

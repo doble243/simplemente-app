@@ -2,7 +2,7 @@
 
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { KINETIC_DURATION, KineticShowreel } from '@/remotion/compositions/KineticShowreel'
+import { AGENCY_DURATION, AgencySystem } from '@/remotion/compositions/AgencySystem'
 
 const Player = dynamic(
   () => import('@remotion/player').then((m) => ({ default: m.Player })),
@@ -13,15 +13,15 @@ function PlayerSkeleton() {
   return (
     <div
       className="w-full animate-pulse rounded-2xl"
-      style={{ aspectRatio: '16/9', background: 'rgba(255,255,255,0.04)' }}
+      style={{ aspectRatio: '16/9', background: 'var(--pub-skeleton-bg)' }}
     />
   )
 }
 
 export function ShowreelSection() {
   return (
-    <section className="relative overflow-hidden bg-[#020D18] py-24">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+    <section className="relative overflow-hidden bg-background py-24">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent" />
 
       <div
         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -37,10 +37,10 @@ export function ShowreelSection() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Showreel
           </p>
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
+          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
             Así construimos tu presencia.
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-white/50">
+          <p className="mx-auto mt-3 max-w-xl text-foreground/50">
             Desde la primera línea de código hasta el resultado final.
           </p>
         </div>
@@ -53,10 +53,10 @@ export function ShowreelSection() {
               background: 'linear-gradient(135deg, rgba(99,102,241,0.4) 0%, rgba(168,85,247,0.2) 50%, rgba(255,255,255,0.06) 100%)',
             }}
           >
-            <div className="overflow-hidden rounded-2xl bg-[#020D18]">
+            <div className="overflow-hidden rounded-2xl bg-background">
               <Player
-                component={KineticShowreel}
-                durationInFrames={KINETIC_DURATION}
+                component={AgencySystem}
+                durationInFrames={AGENCY_DURATION}
                 compositionWidth={1920}
                 compositionHeight={1080}
                 fps={30}
@@ -85,7 +85,7 @@ export function ShowreelSection() {
           {['React', 'Next.js', 'Supabase', 'IA Integrada', 'MercadoPago', 'Tailwind CSS'].map((tech) => (
             <span
               key={tech}
-              className="rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-white/40"
+              className="rounded-full border border-foreground/[0.08] bg-foreground/[0.04] px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-foreground/40"
             >
               {tech}
             </span>

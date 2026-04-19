@@ -81,6 +81,8 @@ interface Message {
   suggestions?: string[]
 }
 
+type ChatMode = 'chat' | 'capture' | 'closing'
+
 interface ChatIntent {
   projectType: string
   budgetRange: string
@@ -89,6 +91,18 @@ interface ChatIntent {
 }
 
 const INITIAL_SUGGESTIONS = ['¿Qué hacen?', '¿Cuánto cuesta?', 'Ver ejemplos']
+
+// ─── Validación de contacto (lead capture) ────────────────────────────────────
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+// UY: 8–12 dígitos tras quitar cualquier separador. Evita "Gmail", "099", etc.
+function isValidEmail(v: string): boolean { return EMAIL_RE.test(v.trim()) }
+function isValidPhone(v: string): boolean {
+  const digits = v.replace(/\D/g, '')
+  return digits.length >= 8 && digits.length <= 12
+}
+function isValidName(v: string): boolean {
+  return v.trim().length >= 2 && /[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(v)
+}
 
 // ─── Quick answers — voz humana, con delay simulado para no parecer bot ───────
 interface QuickAnswer { text: string; suggestions: string[] }
@@ -417,6 +431,116 @@ function isFormTrigger(text: string) {
   return FORM_TRIGGERS.some(f => t.includes(f))
 }
 
+// ─── Lead capture card ────────────────────────────────────────────────────────
+function LeadCaptureCard({
+  onSubmit,
+  onSkip,
+}: {
+  onSubmit: (name: string, method: 'email' | 'whatsapp', value: string) => Promise<string | null>
+  onSkip: () => void
+}) {
+  const [name, setName] = useState('')
+  const [method, setMethod] = useState<'email' | 'whatsapp'>('whatsapp')
+  const [value, setValue] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const nameOk  = isValidName(name)
+  const valueOk = method === 'email' ? isValidEmail(value) : isValidPhone(value)
+  const canSubmit = nameOk && valueOk && !saving
+
+  async function handleSubmit() {
+    setError(null)
+    if (!nameOk)  { setError('Pasame tu nombre (al menos 2 letras).'); return }
+    if (!valueOk) {
+      setError(method === 'email'
+        ? 'Necesito el mail completo (ej: nombre@gmail.com).'
+        : 'Pasame tu WhatsApp con todos los dígitos.')
+      return
+    }
+    setSaving(true)
+    const err = await onSubmit(name, method, value)
+    setSaving(false)
+    if (err) setError(err)
+  }
+
+  return (
+    <div className="ml-9 rounded-2xl p-3.5"
+      style={{
+        background: 'linear-gradient(135deg, rgba(108,99,255,0.10) 0%, rgba(168,85,247,0.06) 100%)',
+        border: '1px solid rgba(108,99,255,0.25)',
+      }}>
+      <p className="text-[12px] font-semibold text-white/85 mb-1">Dejame tu contacto</p>
+      <p className="text-[11px] text-white/50 mb-3 leading-relaxed">
+        Así si se corta la charla no perdemos nada. Seguimos hablando igual, no te llamamos a menos que pidas.
+      </p>
+
+      <input
+        type="text"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="Tu nombre"
+        disabled={saving}
+        autoComplete="given-name"
+        style={{ fontSize: '16px' }}
+        className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white placeholder:text-white/30 outline-none transition-colors focus:border-violet-500/40 focus:bg-white/[0.07] mb-2"
+      />
+
+      <div className="flex gap-1 mb-2">
+        <button
+          type="button"
+          onClick={() => { setMethod('whatsapp'); setValue(''); setError(null) }}
+          className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+            method === 'whatsapp'
+              ? 'bg-violet-500/25 text-violet-100 border border-violet-400/40'
+              : 'bg-white/[0.03] text-white/50 border border-white/[0.06] hover:bg-white/[0.06]'
+          }`}
+        >WhatsApp</button>
+        <button
+          type="button"
+          onClick={() => { setMethod('email'); setValue(''); setError(null) }}
+          className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+            method === 'email'
+              ? 'bg-violet-500/25 text-violet-100 border border-violet-400/40'
+              : 'bg-white/[0.03] text-white/50 border border-white/[0.06] hover:bg-white/[0.06]'
+          }`}
+        >Email</button>
+      </div>
+
+      <input
+        type={method === 'email' ? 'email' : 'tel'}
+        inputMode={method === 'email' ? 'email' : 'tel'}
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        placeholder={method === 'email' ? 'nombre@gmail.com' : '099 123 456'}
+        disabled={saving}
+        autoComplete={method === 'email' ? 'email' : 'tel'}
+        onKeyDown={e => e.key === 'Enter' && canSubmit && handleSubmit()}
+        style={{ fontSize: '16px' }}
+        className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] text-white placeholder:text-white/30 outline-none transition-colors focus:border-violet-500/40 focus:bg-white/[0.07]"
+      />
+
+      {error && (
+        <p className="mt-2 text-[11px] text-red-300/90">{error}</p>
+      )}
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className="flex-1 rounded-lg px-3 py-2 text-[12px] font-semibold text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
+          style={{ background: 'linear-gradient(135deg, #6c63ff 0%, #a855f7 100%)' }}
+        >{saving ? 'Guardando…' : 'Continuar'}</button>
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="rounded-lg px-3 py-2 text-[11px] font-medium text-white/45 transition-colors hover:text-white/75"
+        >Ahora no</button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ChatWidget() {
@@ -435,13 +559,32 @@ export function ChatWidget() {
       return id
     } catch { return `anon-${Date.now()}` }
   }, [])
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hola, ¿en qué te puedo ayudar?',
-      suggestions: INITIAL_SUGGESTIONS,
-    },
-  ])
+  // Lead capture state — persistente en la sesión del navegador
+  const [leadCaptured, setLeadCaptured] = useState<boolean>(() => {
+    try { return sessionStorage.getItem('_chat_lead_captured') === '1' } catch { return false }
+  })
+  const [leadName, setLeadName] = useState<string>(() => {
+    try { return sessionStorage.getItem('_chat_lead_name') ?? '' } catch { return '' }
+  })
+  const [showCapture, setShowCapture] = useState<boolean>(() => {
+    try { return sessionStorage.getItem('_chat_lead_captured') !== '1' } catch { return true }
+  })
+
+  const initialGreeting: Message = leadCaptured
+    ? {
+        role: 'assistant',
+        content: leadName
+          ? `Hola ${leadName}, ¿en qué te puedo ayudar?`
+          : 'Hola, ¿en qué te puedo ayudar?',
+        suggestions: INITIAL_SUGGESTIONS,
+      }
+    : {
+        role: 'assistant',
+        content:
+          'Hola, soy el asistente de Simplemente. Para arrancar dejame tu nombre y un WhatsApp o mail — así, si se corta la charla, no perdemos lo que vayas contando. Después seguimos tranquilos.',
+      }
+
+  const [messages, setMessages] = useState<Message[]>([initialGreeting])
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [animatingIdx, setAnimatingIdx] = useState<number>(-1)
@@ -508,6 +651,60 @@ export function ChatWidget() {
     window.location.href = '/contacto'
   }, [intent, messages])
 
+  // ── Submit lead capture (name + email o phone) ──
+  async function submitLead(name: string, method: 'email' | 'whatsapp', value: string): Promise<string | null> {
+    // Validación final
+    if (!isValidName(name)) return 'Pasame tu nombre (al menos 2 letras).'
+    if (method === 'email' && !isValidEmail(value)) return 'Necesito el mail completo (ej: nombre@gmail.com).'
+    if (method === 'whatsapp' && !isValidPhone(value)) return 'Pasame tu WhatsApp con todos los dígitos.'
+
+    const payload: Record<string, string> = {
+      name: name.trim(),
+      source: 'chatbot',
+    }
+    if (method === 'email') payload.email = value.trim()
+    else payload.phone = value.trim()
+    // Pasamos contexto ya conocido del chat
+    if (intent.projectType) payload.project_type = intent.projectType
+    if (intent.budgetRange) payload.budget_range = intent.budgetRange
+    const userMsgs = messages.filter(m => m.role === 'user').map(m => m.content).slice(-5).join(' · ')
+    if (userMsgs) payload.message = `[session:${sessionId}] ${userMsgs}`
+    else payload.message = `[session:${sessionId}] Contacto desde chat web`
+
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        if (res.status === 429) return 'Muchas solicitudes. Probá más tarde.'
+        return 'No pude guardar el contacto, probá de nuevo.'
+      }
+      // OK — persistir estado
+      try {
+        sessionStorage.setItem('_chat_lead_captured', '1')
+        sessionStorage.setItem('_chat_lead_name', name.trim())
+      } catch { /* ignore */ }
+      setLeadCaptured(true)
+      setLeadName(name.trim())
+      setShowCapture(false)
+
+      // Confirmación + handoff a modo consultivo
+      setMessages(prev => [
+        ...prev.map(m => ({ ...m, suggestions: undefined })),
+        {
+          role: 'assistant',
+          content: `Listo ${name.trim().split(' ')[0]}, ya quedó anotado tu contacto. Ahora contame un poco de tu negocio o proyecto.`,
+          suggestions: ['Tengo un negocio', 'Es una idea nueva', 'Ver ejemplos'],
+        },
+      ])
+      return null
+    } catch {
+      return 'No pude guardar el contacto, probá de nuevo.'
+    }
+  }
+
   // ── Send message ──
   async function sendMessage(text?: string) {
     const content = (text ?? input).trim()
@@ -568,13 +765,19 @@ export function ChatWidget() {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          message:   content,
+          message:      content,
           sessionId,
-          history:   messages.slice(-14).map(({ role, content }) => ({ role, content })),
+          leadCaptured,
+          history:      messages.slice(-14).map(({ role, content }) => ({ role, content })),
         }),
       })
       if (!res.ok) throw new Error()
-      const data = await res.json() as { text: string; suggestions: string[] }
+      const data = await res.json() as {
+        text: string
+        suggestions: string[]
+        mode?: ChatMode
+        lead_intent?: 'low' | 'medium' | 'high'
+      }
 
       // Detect intent from AI response too
       const aiIntent = detectIntent(data.text)
@@ -588,6 +791,11 @@ export function ChatWidget() {
         content: data.text,
         suggestions: data.suggestions?.length ? data.suggestions : undefined,
       }])
+
+      // Si la IA pide captura y todavía no capturamos, mostrar la tarjeta de lead
+      if (!leadCaptured && data.mode === 'capture') {
+        setShowCapture(true)
+      }
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -768,6 +976,11 @@ export function ChatWidget() {
               ) : null}
             </div>
           ))}
+
+          {/* ── Tarjeta de captura de lead (nombre + WhatsApp o mail) ── */}
+          {!leadCaptured && showCapture && !loading && (
+            <LeadCaptureCard onSubmit={submitLead} onSkip={() => setShowCapture(false)} />
+          )}
 
           {loading && (
             <div className="flex gap-2.5">

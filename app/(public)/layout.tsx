@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[#020D18]">
+    <div className="bg-background">
       <Navbar />
       <main>{children}</main>
       <Footer />
